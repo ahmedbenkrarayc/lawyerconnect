@@ -1,3 +1,59 @@
+<?php 
+require './utils/db.php';
+
+$emailError = '';
+$passwordError = '';
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+    if(isset($_POST['email'])){
+        $emailError = '';
+    }else{
+        $emailError = 'Email is required !';
+    }
+
+    if(isset($_POST['password'])){
+        $passwordError = '';
+    }else{
+        $passwordError = 'Password is required !';
+    }
+
+    if(isset($_POST['email']) && isset($_POST['password'])){
+        $email = htmlspecialchars($_POST['email']);
+        $password = htmlspecialchars($_POST['password']);
+
+        $statement = $conn->prepare('SELECT id, password, role FROM user where email = ?');
+        $statement->bind_param('s', $email);
+        $statement->execute();
+        $statement->bind_result($id, $result_pass, $result_role);
+
+        if($statement->fetch()){
+            //user found
+            $emailError = '';
+            
+            //check password
+            if(md5($password) == $result_pass){
+                //correct password
+                $passwordError = '';
+                // setcookie('user_id', $id, time() + 24 * 60 * 60, '/');
+                // setcookie('user_role', $result_role, time() + 24 * 60 * 60, '/');
+
+                header("location: ".$_SERVER['PHP_SELF']);
+            }else{
+                //incorrect password
+                $passwordError = 'Incorrect password !';
+            }
+        }else{
+            //not found
+            $emailError = 'There is no user with this email !';
+        }
+
+        $statement->close();
+    }
+    
+    $conn->close();
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +79,7 @@
                                 <input id="email" type="text" data-testid="username"
                                     class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                                     name="email" value="">
-                                    <span class="text-red-500 text-xs"></span>
+                                <span class="text-red-500 text-xs"><?php echo $emailError ?></span>
                             </div>
                         </div>
                         <div>
@@ -33,7 +89,7 @@
                                     required=""
                                     class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                                     >
-                                <span class="text-red-500 text-xs"></span>
+                                <span class="text-red-500 text-xs"><?php echo $passwordError ?></span>
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
