@@ -1,9 +1,18 @@
+<?php
+require './../../guards/authGuard.php';
+
+if(!isAuth('lawyer')){
+  header('Location: ./../auth/login.php');
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Profile</title>
     <link rel="stylesheet" href="./../../assets/css/output.css">
 </head>
 <body>
@@ -110,7 +119,7 @@
             <!-- Profile Photo -->
             <div class="flex items-center space-x-6">
               <div class="shrink-0">
-                <img src="" alt="Profile photo" class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-100">
+                <img src="https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg" alt="Profile photo" class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-100">
               </div>
               <label class="block">
                 <span class="sr-only">Choose profile photo</span>
