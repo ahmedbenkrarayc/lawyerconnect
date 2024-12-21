@@ -54,7 +54,21 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     }
 
     if($isValid){
-        
+        $fname = htmlspecialchars($_POST['fname']);
+        $lname = htmlspecialchars($_POST['lname']);
+        $phone = htmlspecialchars($_POST['phone']);
+        $email = htmlspecialchars($_POST['email']);
+        $password = htmlspecialchars($_POST['password']);
+        $role = htmlspecialchars($_POST['role']);
+        $sql = "INSERT INTO user(fname, lname, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ssssss', $fname, $lname, $email, $phone, md5($password), $role);
+        if($stmt->execute()){
+            header('Location: ./login.php');
+        }
+
+        $stmt->close();
+        $conn->close();
     }
 }
 
