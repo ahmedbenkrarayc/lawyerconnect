@@ -21,6 +21,51 @@ $stmt->bind_param('i', $_COOKIE['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $lawyer = $result->fetch_assoc();
+
+$stmt->close();
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+  $fname = htmlspecialchars($_POST['fname']);
+  $lname = htmlspecialchars($_POST['lname']);
+  $email = htmlspecialchars($_POST['email']);
+  $phone = htmlspecialchars($_POST['phone']);
+
+  $speciality = htmlspecialchars($_POST['speciality']);
+  $experience = htmlspecialchars($_POST['experience']);
+  $hourlyrate = htmlspecialchars($_POST['hourlyrate']);
+  $casecount = htmlspecialchars($_POST['casecount']);
+  $country = htmlspecialchars($_POST['country']);
+  $city = htmlspecialchars($_POST['city']);
+  $address = htmlspecialchars($_POST['address']);
+  $biographie = htmlspecialchars($_POST['biographie']);
+
+  $sql = "UPDATE user SET fname = ?, lname = ?, email = ?, phone = ? WHERE id = ?";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param('ssssi', $fname, $lname, $email, $phone);
+  $stmt->execute();
+
+  $stmt->close();
+
+  if($lawyer){
+    $sql = "UPDATE lawyer_details SET specialite = ?, experience = ?, biographie = ?, country = ?, city = ?, address = ?, casecount = ?, hourly_rate = ? WHERE id_lawyer = ?";
+  }else{
+    $sql = "INSERT INTO lawyer_details VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  }
+  $stmt = $conn->prepare($sql);
+  if($lawyer){
+    $stmt->bind_param('sissssidi', $speciality, $experience, $biographie, $country, $city, $address, $casecount, $hourlyrate, $_COOKIE['user_id']);
+  }else{
+    $stmt->bind_param('isissssid', $_COOKIE['user_id'], $speciality, $experience, $biographie, $country, $city, $address, $casecount, $hourlyrate);
+  }
+
+  if($stmt->execute()){
+    alert("<script>alert('updated successfully')</script>");
+  }
+
+  $stmt->close();
+  $conn->close();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -131,15 +176,15 @@ $lawyer = $result->fetch_assoc();
         </div>
         
         <div class="px-8 py-6">
-          <form class="space-y-6">
+          <form method="post" action="<?php echo $_SERVER['PHP_SELF'] ?>" class="space-y-6">
             <!-- Profile Photo -->
             <div class="flex items-center space-x-6">
               <div class="shrink-0">
-                <img src="<?php echo $user['photo'] ? $user['photo'] : 'https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg'?>" alt="Profile photo" class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-100">
+                <img id="image" src="<?php echo $user['photo'] ? $user['photo'] : 'https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg'?>" alt="Profile photo" class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-100">
               </div>
               <label class="block">
                 <span class="sr-only">Choose profile photo</span>
-                <input type="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"/>
+                <input type="file" id="photo" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100" accept="image/*"/>
               </label>
             </div>
 
@@ -211,9 +256,6 @@ $lawyer = $result->fetch_assoc();
 
             <div class="border-t border-gray-200 pt-6">
               <div class="flex justify-end">
-                <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 mr-3">
-                  Cancel
-                </button>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Save Changes
                 </button>
@@ -225,5 +267,6 @@ $lawyer = $result->fetch_assoc();
     </div>
   </div>
 </div>
+<script src="./../../assets/js/profileEdit.js"></script>
 </body>
 </html>
