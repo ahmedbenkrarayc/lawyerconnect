@@ -1,10 +1,26 @@
 <?php
+require './../../utils/db.php';
 require './../../guards/authGuard.php';
 
 if(!isAuth('lawyer')){
   header('Location: ./../auth/login.php');
 }
 
+$sql = 'SELECT * FROM user WHERE id = ?';
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+$stmt->close();
+
+$sql = 'SELECT * FROM lawyer_details WHERE id_lawyer = ?';
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$lawyer = $result->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -119,7 +135,7 @@ if(!isAuth('lawyer')){
             <!-- Profile Photo -->
             <div class="flex items-center space-x-6">
               <div class="shrink-0">
-                <img src="https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg" alt="Profile photo" class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-100">
+                <img src="<?php echo $user['photo'] ? $user['photo'] : 'https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg'?>" alt="Profile photo" class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-100">
               </div>
               <label class="block">
                 <span class="sr-only">Choose profile photo</span>
@@ -131,22 +147,66 @@ if(!isAuth('lawyer')){
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                <input type="text" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <input type="text" name="fname" value="<?php echo $user ? $user['fname'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <input type="text" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <input type="text" name="lname" value="<?php echo $user ? $user['lname'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
               </div>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              <input type="email" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              <input type="email" name="email" value="<?php echo $user ? $user['email'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input type="tel" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              <input type="tel" name="phone" value="<?php echo $user ? $user['phone'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Speciality</label>
+              <input type="text" name="speciality" value="<?php echo $lawyer ? $lawyer['specialite'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Experience</label>
+              <input type="number" min="0" name="experience" value="<?php echo $lawyer ? $lawyer['experience'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Hourly rate</label>
+              <input type="number" min="0" name="hourlyrate" value="<?php echo $lawyer ? $lawyer['hourly_rate'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Number of cases</label>
+              <input type="number" min="0" name="casecount" value="<?php echo $lawyer ? $lawyer['casecount'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+              <input type="text" name="country" value="<?php echo $lawyer ? $lawyer['country'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+              <input type="text" name="city" value="<?php echo $lawyer ? $lawyer['city'] : '' ?>" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <textarea name="address" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <?php echo $lawyer ? $lawyer['address'] : '' ?>
+              </textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+              <textarea name="biographie" class="px-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <?php echo $lawyer ? $lawyer['biographie'] : '' ?>
+              </textarea>
             </div>
 
             <div class="border-t border-gray-200 pt-6">
