@@ -1,5 +1,10 @@
 <?php
 require './../../utils/db.php';
+require './../../guards/authGuard.php';
+
+if(!isAuth('guest')){
+    header('Location: ./../'.$_COOKIE['user_role'].'/dashboard.php');
+}
 
 $errors = [
     'fname' => '',
