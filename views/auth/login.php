@@ -1,9 +1,9 @@
 <?php 
-require './utils/db.php';
-require './../../utils/guards.php';
+require './../../utils/db.php';
+require './../../guards/authGuard.php';
 
 if(!isAuth('guest')){
-    header('Location: ./'.$_COOKIE['user_role'].'/dashboard.php');
+    header('Location: ./../'.$_COOKIE['user_role'].'/dashboard.php');
 }
 
 $emailError = '';
@@ -38,8 +38,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             if(md5($password) == $result_pass){
                 //correct password
                 $passwordError = '';
-                // setcookie('user_id', $id, time() + 24 * 60 * 60, '/');
-                // setcookie('user_role', $result_role, time() + 24 * 60 * 60, '/');
+                setcookie('user_id', $id, time() + 24 * 60 * 60, '/');
+                setcookie('user_role', $result_role, time() + 24 * 60 * 60, '/');
 
                 header("location: ".$_SERVER['PHP_SELF']);
             }else{
@@ -83,7 +83,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                             <div class="mt-1">
                                 <input id="email" type="text" data-testid="username"
                                     class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                                    name="email" value="">
+                                    name="email" value="<?php echo isset($_POST['email']) ? $_POST['email'] : '' ?>">
                                 <span class="text-red-500 text-xs"><?php echo $emailError ?></span>
                             </div>
                         </div>
