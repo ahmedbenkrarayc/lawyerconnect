@@ -1,6 +1,6 @@
 <?php
 
-require './../env.php';
+require __DIR__.'/../env.php';
 
 $conn = new mysqli($host, $username, $password ,$database);
 

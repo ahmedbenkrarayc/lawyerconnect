@@ -1,5 +1,10 @@
 <?php 
 require './utils/db.php';
+require './../../utils/guards.php';
+
+if(!isAuth('guest')){
+    header('Location: ./'.$_COOKIE['user_role'].'/dashboard.php');
+}
 
 $emailError = '';
 $passwordError = '';
@@ -48,7 +53,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
         $statement->close();
     }
-    
+
     $conn->close();
 }
 
