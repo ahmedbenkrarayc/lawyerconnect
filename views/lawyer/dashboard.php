@@ -1,15 +1,57 @@
+<?php 
+require './../../utils/db.php';
+require './../../guards/authGuard.php';
+
+if(!isAuth('lawyer')){
+  header('Location: ./../auth/login.php');
+}
+
+$sql = "SELECT COUNT(*) as number FROM reservation WHERE STATUS = 'waiting' AND id_lawyer = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$waiting = $result->fetch_assoc();
+$stmt->close();
+
+$sql = "SELECT COUNT(*) as number FROM reservation WHERE date_reservation = CURDATE() AND STATUS = 'confirmed' AND id_lawyer = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$today = $result->fetch_assoc();
+$stmt->close();
+
+$sql = "SELECT COUNT(*) as number FROM reservation WHERE DATEDIFF(date_reservation, CURDATE()) = 1 AND STATUS = 'confirmed' AND id_lawyer = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$tomorrow = $result->fetch_assoc();
+$stmt->close();
+
+$sql = "SELECT r.*,u.fname, u.lname, u.phone, u.email FROM reservation r, user u, user l WHERE r.id_client = u.id AND r.id_lawyer = l.id AND r.id_lawyer = ? AND r.`status` = 'waiting' AND date_reservation = CURDATE()";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$clients = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+$conn->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="./../../assets/css/output.css">
 
 </head>
 <body>
 <div class="flex min-h-screen bg-gray-50">
-  <!-- Sidebar - Same structure but with Unavailability nav item active -->
   <div class="w-64 bg-indigo-600 text-white">
     <div class="flex items-center h-16 px-4">
       <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,8 +113,7 @@
             <div class="flex-1">
               <p class="text-sm font-medium text-gray-500">Today's Clients</p>
               <div class="flex items-baseline mt-1">
-                <p class="text-2xl font-semibold text-gray-900">8</p>
-                <span class="ml-2 text-sm font-medium text-green-600">+2</span>
+                <p class="text-2xl font-semibold text-gray-900"><?php echo $waiting['number'] ?></p>
               </div>
             </div>
             <div class="p-3 bg-green-50 rounded-lg">
@@ -89,8 +130,7 @@
             <div class="flex-1">
               <p class="text-sm font-medium text-gray-500">Monthly Clients</p>
               <div class="flex items-baseline mt-1">
-                <p class="text-2xl font-semibold text-gray-900">145</p>
-                <span class="ml-2 text-sm font-medium text-green-600">+12%</span>
+                <p class="text-2xl font-semibold text-gray-900"><?php echo $today['number'] ?></p>
               </div>
             </div>
             <div class="p-3 bg-green-50 rounded-lg">
@@ -107,8 +147,7 @@
             <div class="flex-1">
               <p class="text-sm font-medium text-gray-500">Pending Requests</p>
               <div class="flex items-baseline mt-1">
-                <p class="text-2xl font-semibold text-gray-900">24</p>
-                <span class="ml-2 text-sm font-medium text-red-600">-3</span>
+                <p class="text-2xl font-semibold text-gray-900"><?php echo $tomorrow['number'] ?></p>
               </div>
             </div>
             <div class="p-3 bg-red-50 rounded-lg">
@@ -129,45 +168,25 @@
           <table class="w-full">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
+              <?php foreach($clients as $item): ?>
               <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">09:00 AM</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sarah Johnson</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Initial Consultation</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $item['fname'].' '.$item['lname'] ?></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $item['email'] ?></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo $item['phone'] ?></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo $item['date_reservation'] ?></td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>
                 </td>
               </tr>
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10:30 AM</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Michael Chen</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Document Review</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">In Progress</span>
-                </td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">02:00 PM</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Emily Williams</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Case Discussion</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Scheduled</span>
-                </td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">03:30 PM</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Robert Davis</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Contract Review</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Scheduled</span>
-                </td>
-              </tr>
+              <?php endforeach; ?>
             </tbody>
           </table>
         </div>
