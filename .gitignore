@@ -1,3 +1,4 @@
 node_modules
 assets/css/output.css
 env.php
+vendor

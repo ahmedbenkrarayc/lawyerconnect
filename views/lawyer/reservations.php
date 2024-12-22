@@ -13,6 +13,10 @@ $stmt->execute();
 $result = $stmt->get_result();
 $reservations = $result->fetch_all(MYSQLI_ASSOC);
 
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+  echo $_POST['action'];
+}
+
 $stmt->close();
 $conn->close();
 ?>
@@ -116,8 +120,10 @@ $conn->close();
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo $item['date_reservation'] ?></td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button class="bg-green-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-green-600">Accepter</button>
-              <button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">Refuser</button>
+              <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
+                <button name="action" value="confirmed" class="bg-green-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-green-600">Accepter</button>
+                <button name="action" value="canceled" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">Refuser</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>
