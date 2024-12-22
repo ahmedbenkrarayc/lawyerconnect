@@ -66,11 +66,11 @@ $lawyers = $result->fetch_all(MYSQLI_ASSOC);
                 <a href="#">Login</a>
                 <a href="#" class="text-white bg-black px-4 py-2">Sign up</a>
             </div>
-            <img class="sm:block md:hidden cursor-pointer" src="./assets/icons/menu.svg" alt="menu icon">
+            <img id="home-burger" class="sm:block md:hidden cursor-pointer" src="./assets/icons/menu.svg" alt="menu icon">
         </nav>
 
-        <div class="hidden fixed w-[400px] h-screen bg-black text-white top-0 right-0 px-6 py-4">
-            <img class="block ml-auto size-8 cursor-pointer" src="./assets/icons/x.svg" alt="x mark">
+        <div id="mobilemenu" class="z-[1000] fixed w-[400px] h-screen bg-black text-white top-0 right-[-80%] px-6 py-4">
+            <img id="close-burger" class="block ml-auto size-8 cursor-pointer" src="./assets/icons/x.svg" alt="x mark">
             <a href="#" class="block w-fit mx-auto px-2 pb-1 hover:border-b text-center text-xl font-[200] mb-6 mt-[80px]">Home</a>
             <a href="#" class="block w-fit mx-auto px-2 pb-1 hover:border-b text-center text-xl font-[200] mb-6">Find lawyer</a>
             <a href="#" class="block w-fit mx-auto px-2 pb-1 hover:border-b text-center text-xl font-[200] mb-6">About</a>
@@ -198,14 +198,14 @@ $lawyers = $result->fetch_all(MYSQLI_ASSOC);
         <div class="md:flex md:gap-x-[80px] lg:gap-x-[100px] sm:w-fit mx-auto md:w-full">
             <div class="md:w-[25%]">
                 <h1 class="text-white font-semibold text-xl">LawyerConnect</h1>
-                <p class="text-[#D7D7D7] mt-2 text-xs">Offers modern, affordable clothing for Men, Women, and Kids, perfect for everyday wear</p>
+                <p class="text-[#D7D7D7] mt-2 text-xs">Provides expert legal services for individuals and businesses, tailored to meet client needs</p>
             </div>
             <div class="md:w-[75%] grid md:grid-cols-4 gap-y-6 sm:mt-6 md:mt-0">
                 <div>
                     <h1 class="text-white font-medium text-base mb-3">Pages</h1>
-                    <a class="w-fit text-[#D7D7D7] block text-[13px] mb-1" href="./views/catalog.html">All products</a>
-                    <a class="w-fit text-[#D7D7D7] block text-[13px] mb-1" href="./views/catalog.html">Men</a>
-                    <a class="w-fit text-[#D7D7D7] block text-[13px] mb-1" href="./views/catalog.html">Women</a>
+                    <a class="w-fit text-[#D7D7D7] block text-[13px] mb-1" href="./views/catalog.html">Home</a>
+                    <a class="w-fit text-[#D7D7D7] block text-[13px] mb-1" href="./views/catalog.html">Find lawyer</a>
+                    <a class="w-fit text-[#D7D7D7] block text-[13px] mb-1" href="./views/catalog.html">Location</a>
                 </div>
                 <div>
                     <h1 class="text-white font-medium text-base mb-3">Pages</h1>
@@ -222,9 +222,8 @@ $lawyers = $result->fetch_all(MYSQLI_ASSOC);
                 <div>
                     <h1 class="text-white font-medium text-base mb-2">Payment</h1>
                     <div class="flex items-center gap-x-1">
-                        <img class="bg-cover h-fit" src="./assets/icon/icmastercard.png" alt="mastercard icon">
-                        <img class="bg-cover h-fit" src="./assets/icon/icvisa.png" alt="visa icon">
-                        <img class="bg-cover h-fit" src="./assets/icon/icpaypal.png" alt="paypal icon">
+                        <img class="bg-cover h-fit" src="./assets/icons/mastercard.png" alt="mastercard icon">
+                        <img class="bg-cover h-fit" src="./assets/icons/paypal.png" alt="paypal icon">
                     </div>
                 </div>
             </div>
@@ -232,5 +231,6 @@ $lawyers = $result->fetch_all(MYSQLI_ASSOC);
         <hr class="mt-10 mb-4">
         <p class="text-center text-[#D7D7D7] text-xs">Copyright ©2024. All right reserved</p>
     </footer>
+    <script src="./assets/js/burger.js"></script>
 </body>
 </html>

@@ -3,7 +3,11 @@ require './../../utils/db.php';
 require './../../guards/authGuard.php';
 
 if(!isAuth('guest')){
-    header('Location: ./../'.$_COOKIE['user_role'].'/dashboard.php');
+    if($_COOKIE['user_role'] == 'lawyer'){
+        header('Location: ./../'.$_COOKIE['user_role'].'/dashboard.php');
+    }else{
+        header('Location: ./../'.$_COOKIE['user_role'].'/editprofile.php');
+    }
 }
 
 $errors = [
