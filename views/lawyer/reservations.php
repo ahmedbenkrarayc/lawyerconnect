@@ -1,23 +1,46 @@
 <?php
 require './../../utils/db.php';
 require './../../guards/authGuard.php';
+require './../../utils/mailer.php';
 
 if(!isAuth('lawyer')){
   header('Location: ./../auth/login.php');
 }
 
-$sql = 'SELECT r.*,u.fname, u.lname, u.phone FROM reservation r, user u, user l WHERE r.id_client = u.id AND r.id_lawyer = l.id AND r.id_lawyer = ?';
+$sql = 'SELECT r.*,u.fname, u.lname, u.phone, u.email FROM reservation r, user u, user l WHERE r.id_client = u.id AND r.id_lawyer = l.id AND r.id_lawyer = ?';
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $_COOKIE['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $reservations = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
-  echo $_POST['action'];
+  $sql = 'UPDATE reservation SET status = ? WHERE id = ?';
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param('si', $_POST['action'], $_POST['id']);
+  if($stmt->execute()){
+    if($_POST['action'] == 'confirmed'){
+      $body = '
+      <h2>Reservation Accepted</h2>
+      <p>Dear '.$_POST['name'].',</p>
+      <p>Your reservation has been successfully accepted. We look forward to see you on '.$_POST['date'].'!</p>
+      <p>If you have any questions, feel free to contact us.</p>
+      <p>Best regards,</p>';
+    }else{
+      $body = '
+      <h2>Reservation Rejected</h2>
+      <p>Dear '.$_POST['name'].',</p>
+      <p>We regret to inform you that your reservation could not be accepted at'.$_POST['date'].'. Please feel free to try again or contact us for more details.</p>
+      <p>Best regards,</p>';
+    }
+  
+    sendMail($_POST['name'], $_POST['email'], 'Reservation request status', $body);
+    header('Location: '.$_SERVER['PHP_SELF']);
+    $stmt->close();
+  }
 }
 
-$stmt->close();
 $conn->close();
 ?>
 
@@ -120,10 +143,16 @@ $conn->close();
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo $item['date_reservation'] ?></td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <?php if($item['status'] == 'waiting'): ?>
               <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
+                <input type="hidden" name="id" value="<?php echo $item['id'] ?>">
+                <input type="hidden" name="name" value="<?php echo $item['fname'].' '.$item['lname'] ?>">
+                <input type="hidden" name="email" value="<?php echo $item['email'] ?>">
+                <input type="hidden" name="date" value="<?php echo $item['date_reservation'] ?>">
                 <button name="action" value="confirmed" class="bg-green-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-green-600">Accepter</button>
                 <button name="action" value="canceled" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">Refuser</button>
               </form>
+              <?php endif; ?>
             </td>
           </tr>
           <?php endforeach; ?>
