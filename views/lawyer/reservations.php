@@ -6,7 +6,15 @@ if(!isAuth('lawyer')){
   header('Location: ./../auth/login.php');
 }
 
+$sql = 'SELECT r.*,u.fname, u.lname, u.phone FROM reservation r, user u, user l WHERE r.id_client = u.id AND r.id_lawyer = l.id AND r.id_lawyer = ?';
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_COOKIE['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$reservations = $result->fetch_all(MYSQLI_ASSOC);
 
+$stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -83,29 +91,36 @@ if(!isAuth('lawyer')){
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
+          <?php foreach($reservations as $item): ?>
           <tr>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
-                <div class="h-10 w-10 flex-shrink-0">
-                  <img src="/api/placeholder/40/40" alt="" class="h-10 w-10 rounded-full">
-                </div>
-                <div class="ml-4">
-                  <div class="text-sm font-medium text-gray-900">John Smith</div>
+                <div class="">
+                  <div class="text-sm font-medium text-gray-900"><?php echo $item['fname'].' '.$item['lname'] ?></div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">john.smith@example.com</div>
+              <div class="text-sm text-gray-900"><?php echo $item['phone'] ?></div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+              <?php 
+                if($item['status'] == 'confirmed'){
+                  echo '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">'.$item['status'].'</span>';
+                }else if($item['status'] == 'waiting'){
+                  echo '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">'.$item['status'].'</span>';
+                }else{
+                  echo '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">'.$item['status'].'</span>';
+                }
+              ?>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Developer</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo $item['date_reservation'] ?></td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button class="bg-green-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-green-600">Accepter</button>
               <button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">Refuser</button>
             </td>
           </tr>
+          <?php endforeach; ?>
         </tbody>
       </table>
     </div>
