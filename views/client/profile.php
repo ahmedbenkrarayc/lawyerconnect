@@ -11,9 +11,43 @@ $stmt->bind_param('i', $_GET['id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $lawyer = $result->fetch_assoc();
+$stmt->close();
 if(!$lawyer){
     header('Location: ./../../index.php');
 }
+
+$sql = 'SELECT date_debut, date_fin FROM unavailable WHERE id_lawyer = ? AND date_fin >= CURDATE()';
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $_GET['id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$dates = $result->fetch_assoc();
+
+$date_start = '';
+$date_end = '';
+if($dates){
+    $date_start = $dates['date_debut'];
+    $date_end = $dates['date_fin'];
+}
+
+$date_start_js = $date_start ? (new DateTime($date_start))->format('Y-m-d') : '';
+$date_end_js = $date_end ? (new DateTime($date_end))->format('Y-m-d') : '';
+
+$stmt->close();
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+    $user_id = $_COOKIE['user_id'];
+    $lawyer_id = $_GET['id'];
+    $selected_date = $_POST['selected_date'];
+    $status = 'waiting';
+
+    $sql = 'INSERT INTO reservation(id_client, id_lawyer, date_reservation, status) VALUES(?, ?, ?, ?)';
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('iiss', $user_id, $lawyer_id, $selected_date, $status);
+    $stmt->execute();
+}
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -23,6 +57,53 @@ if(!$lawyer){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $lawyer['fname'].' '.$lawyer['lname'] ?></title>
     <link rel="stylesheet" href="./../../assets/css/output.css">
+    <style>
+        #calendar {
+        display: flex;
+        flex-direction: column;
+        width: 320px;
+        margin: 20px auto;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px;
+        }
+        #calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+        #calendar-header button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        }
+        #calendar-header button:hover {
+        background-color: #0056b3;
+        }
+        #calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        margin-top: 10px;
+        }
+        .day {
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        }
+        .day:hover {
+        background-color: #f0f0f0;
+        }
+        .selected {
+        background-color: #007bff;
+        color: white;
+        }
+  </style>
 </head>
 <body>
 <section class="w-full overflow-hidden dark:bg-gray-900">
@@ -105,6 +186,95 @@ if(!$lawyer){
             </div>
         </div>
     </div>
+    <div id="calendar">
+    <div id="calendar-header">
+      <button id="prev-month">←</button>
+      <h3 id="month-year"></h3>
+      <button id="next-month">→</button>
+    </div>
+    <div id="calendar-days"></div>
+  </div>
+  <form id="date-form" action="" method="POST" style="display: none;">
+    <input type="hidden" name="selected_date" id="selected_date">
+    <input type="submit" value="Submit Date">
+  </form>
+  <script>
+    const calendarDays = document.getElementById('calendar-days');
+    const monthYear = document.getElementById('month-year');
+    const prevMonth = document.getElementById('prev-month');
+    const nextMonth = document.getElementById('next-month');
+    const dateForm = document.getElementById('date-form');
+    const selectedDateInput = document.getElementById('selected_date');
+
+    let currentDate = new Date();
+
+    // Get the disabled date range from PHP
+    const dateStart = '<?php echo $date_start_js; ?>';
+    const dateEnd = '<?php echo $date_end_js; ?>';
+
+    // Function to check if a date is within the range
+    function isDateDisabled(date) {
+      if (dateStart && dateEnd) {
+        const startDate = new Date(dateStart);
+        const endDate = new Date(dateEnd);
+        return date >= startDate && date <= endDate;
+      }
+      return false; // If no range is set, no date is disabled
+    }
+
+    function renderCalendar(date) {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      calendarDays.innerHTML = '';
+      monthYear.textContent = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement('div');
+        calendarDays.appendChild(emptyDay);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        const currentDay = new Date(year, month, day);
+        dayElement.textContent = day;
+        dayElement.classList.add('day');
+
+        // Check if the date is disabled
+        if (isDateDisabled(currentDay)) {
+          dayElement.classList.add('disabled');
+          dayElement.style.cursor = 'not-allowed';  // Disable clicking
+        } else {
+          dayElement.addEventListener('click', () => {
+            document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
+            dayElement.classList.add('selected');
+            
+            // Set the selected date value in the hidden input field
+            selectedDateInput.value = `${year}-${month + 1}-${day < 10 ? '0' + day : day}`;
+            
+            // Submit the form
+            dateForm.submit();
+          });
+        }
+
+        calendarDays.appendChild(dayElement);
+      }
+    }
+
+    prevMonth.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar(currentDate);
+    });
+
+    nextMonth.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar(currentDate);
+    });
+
+    renderCalendar(currentDate);
+  </script>
 </section>
 </body>
 </html>
