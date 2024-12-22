@@ -152,14 +152,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     <!-- Top Navigation -->
     <div class="bg-white shadow">
       <div class="px-8 h-16 flex items-center justify-between">
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
-            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </span>
-          <input type="text" placeholder="Search..." class="w-64 pl-10 pr-4 h-10 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-        </div>
+        <div class="relative"></div>
         
         <div class="flex items-center space-x-4">
           <button class="p-2 text-gray-400 hover:text-gray-500">
@@ -168,8 +161,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             </svg>
           </button>
           <div class="flex items-center">
-            <img src="/api/placeholder/32/32" alt="Profile" class="w-8 h-8 rounded-full">
-            <span class="ml-3 font-medium text-gray-700">John Doe</span>
+            <img src="<?php echo $user['photo'] ? $user['photo'] : 'https://static.vecteezy.com/system/resources/previews/005/544/718/non_2x/profile-icon-design-free-vector.jpg'?>" alt="Profile" class="w-8 h-8 rounded-full">
+            <span class="ml-3 font-medium text-gray-700"><?php echo $user['fname'].' '.$user['lname'] ?></span>
           </div>
         </div>
       </div>
